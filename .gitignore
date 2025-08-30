@@ -1,0 +1,7 @@
+.idea
+dbdata
+dbdata-replica
+.env
+mysql-data-1
+mysql-data-2
+

@@ -1,0 +1,44 @@
+services:
+
+  mysql:
+    image: mysql:8.0.32
+    container_name: mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ./dbdata:/var/lib/mysql/
+      - ./conf/mysql/my.cnf:/etc/my.cnf
+      - ./sakila-db:/db_dump/
+      - ./bin/mysql:/docker-entrypoint-initdb.d/
+    networks:
+      - mysql-net
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  mysql-replica:
+    image: mysql:8.0.32
+    container_name: mysql-replica
+    restart: always
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_REPLICA_ROOT_PASSWORD}
+    volumes:
+      - ./dbdata-replica:/var/lib/mysql/
+      - ./conf/mysql-replica/my.cnf:/etc/my.cnf
+      - ./bin/mysql-replica:/docker-entrypoint-initdb.d/
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - mysql-net
+
+networks:
+  mysql-net:
+    driver: bridge
